@@ -3,61 +3,54 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cleansurance</title>
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <script>
-    window.onload = () => {
-      lucide.createIcons();
-    };
-  </script>
+  <title>Sign Up - Cleansurance</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body class="bg-gradient-to-b from-blue-50 to-white text-gray-900 p-6">
-  <header class="text-center mb-12">
-    <h1 class="text-5xl font-extrabold mb-4 text-blue-900">Cleansurance</h1>
-    <p class="text-xl max-w-2xl mx-auto text-gray-700">
-      Your Ride. Our Coverage. Peace of Mind for Just $5/Month. Say goodbye to unexpected cleaning fees and ride with confidence.
+<body class="bg-gradient-to-b from-white to-blue-50 text-gray-900 p-6">
+  <div class="max-w-xl mx-auto mt-12 bg-white shadow-lg rounded-xl p-8">
+    <h1 class="text-3xl font-bold mb-6 text-center text-blue-800">Join Cleansurance</h1>
+    <p class="text-center text-gray-600 mb-8">
+      Sign up now and protect yourself from unexpected cleaning fees for just $5/month.
     </p>
-  </header>
-
-  <section class="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto mb-20">
-    <div class="bg-white rounded-xl shadow-xl border border-blue-100 p-8">
-      <div class="flex items-center mb-4">
-        <i data-lucide="shield-check" class="w-10 h-10 text-blue-600 mr-3"></i>
-        <h2 class="text-3xl font-semibold">What is Cleansurance?</h2>
+    
+    <form action="https://formspree.io/f/your-form-id" method="POST" class="space-y-6">
+      <div>
+        <label class="block mb-1 font-medium" for="name">Full Name</label>
+        <input type="text" id="name" name="name" required class="w-full border rounded px-4 py-2" />
       </div>
-      <p class="text-gray-700 leading-relaxed">
-        Cleansurance is a subscription-based insurance plan that protects you from surprise cleaning charges when using ride-share platforms like Uber or Lyft. For just $5/month, you're covered for up to $70 in cleaning fees, giving you the confidence to ride worry-free.
-      </p>
-    </div>
-
-    <div class="bg-white rounded-xl shadow-xl border border-green-100 p-8">
-      <div class="flex items-center mb-4">
-        <i data-lucide="check-circle" class="w-10 h-10 text-green-600 mr-3"></i>
-        <h2 class="text-3xl font-semibold">How It Works</h2>
+      
+      <div>
+        <label class="block mb-1 font-medium" for="email">Email Address</label>
+        <input type="email" id="email" name="_replyto" required class="w-full border rounded px-4 py-2" />
       </div>
-      <ul class="list-disc pl-5 space-y-3 text-gray-700">
-        <li>Sign up online in under 2 minutes</li>
-        <li>Pay just $5/month for complete coverage</li>
-        <li>Accident during ride? Submit a claim online</li>
-        <li>We cover your cleaning fees up to $70</li>
-        <li>Fast and reliable customer support</li>
-      </ul>
-    </div>
-  </section>
+      
+      <div>
+        <label class="block mb-1 font-medium" for="phone">Phone Number</label>
+        <input type="tel" id="phone" name="phone" class="w-full border rounded px-4 py-2" />
+      </div>
 
-  <section class="bg-blue-100 rounded-xl py-16 px-6 text-center max-w-4xl mx-auto">
-    <h2 class="text-3xl font-bold mb-4 text-blue-900">Sign Up Now</h2>
-    <p class="text-lg text-gray-800 mb-8 max-w-xl mx-auto">
-      Start protecting your wallet from surprise cleaning charges. Join thousands of riders already covered by Cleansurance.
+      <div>
+        <label class="block mb-1 font-medium" for="platform">Primary Ride Platform</label>
+        <select id="platform" name="platform" class="w-full border rounded px-4 py-2">
+          <option>Uber</option>
+          <option>Lyft</option>
+          <option>Both</option>
+        </select>
+      </div>
+
+      <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded text-lg">
+        Submit & Join for $5/month
+      </button>
+    </form>
+
+    <p class="text-center text-sm text-gray-500 mt-6">
+      By signing up, you agree to our <a href="#" class="underline">Terms of Service</a>.
     </p>
-    <a href="signup.html" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium px-8 py-4 rounded-lg text-lg">
-      Get Cleansurance
-    </a>
-  </section>
+  </div>
 
-  <footer class="text-center mt-20 text-sm text-gray-600">
+  <footer class="text-center mt-12 text-sm text-gray-600">
     &copy; <script>document.write(new Date().getFullYear());</script> Cleansurance. All rights reserved.
   </footer>
 </body>
 </html>
+
