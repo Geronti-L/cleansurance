@@ -1,52 +1,54 @@
-import React from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { CheckCircle, ShieldCheck } from "lucide-react";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cleansurance</title>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    window.onload = () => {
+      lucide.createIcons();
+    };
+  </script>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 text-gray-900 p-6">
+  <header class="text-center mb-10">
+    <h1 class="text-4xl font-bold mb-2">Cleansurance</h1>
+    <p class="text-lg">Your Ride. Our Coverage. Peace of Mind for Just $5/Month.</p>
+  </header>
 
-export default function CleansuranceHome() {
-  return (
-    <div className="min-h-screen bg-gray-100 p-6 text-gray-900">
-      <header className="text-center mb-10">
-        <h1 className="text-4xl font-bold mb-2">Cleansurance</h1>
-        <p className="text-lg">Your Ride. Our Coverage. Peace of Mind for Just $5/Month.</p>
-      </header>
-
-      <section className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto mb-16">
-        <Card className="shadow-lg">
-          <CardContent className="p-6">
-            <ShieldCheck className="w-10 h-10 mb-4 text-blue-600" />
-            <h2 className="text-2xl font-semibold mb-2">What is Cleansurance?</h2>
-            <p>
-              Cleansurance is a monthly insurance service that protects riders from unexpected
-              cleaning fees during Uber rides. Instead of paying up to $70 for a minor accident,
-              you can relax knowing you're covered.
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-lg">
-          <CardContent className="p-6">
-            <CheckCircle className="w-10 h-10 mb-4 text-green-600" />
-            <h2 className="text-2xl font-semibold mb-2">How It Works</h2>
-            <ul className="list-disc pl-5 space-y-2">
-              <li>Subscribe to Cleansurance for just $5/month</li>
-              <li>Ride worry-free on Uber or similar platforms</li>
-              <li>Report incidents through our app or website</li>
-              <li>We cover your cleaning fees up to $70</li>
-            </ul>
-          </CardContent>
-        </Card>
-      </section>
-
-      <section className="text-center">
-        <h2 className="text-2xl font-bold mb-4">Sign Up Now</h2>
-        <p className="mb-6">Start protecting your wallet from unexpected cleaning fees today.</p>
-        <Button className="text-lg px-6 py-3">Get Cleansurance</Button>
-      </section>
-
-      <footer className="text-center mt-16 text-sm text-gray-600">
-        &copy; {new Date().getFullYear()} Cleansurance. All rights reserved.
-      </footer>
+  <section class="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto mb-16">
+    <div class="bg-white rounded-xl shadow-lg p-6">
+      <i data-lucide="shield-check" class="w-10 h-10 mb-4 text-blue-600"></i>
+      <h2 class="text-2xl font-semibold mb-2">What is Cleansurance?</h2>
+      <p>
+        Cleansurance is a monthly insurance service that protects riders from unexpected
+        cleaning fees during Uber rides. Instead of paying up to $70 for a minor accident,
+        you can relax knowing you're covered.
+      </p>
     </div>
-  );
-}
+
+    <div class="bg-white rounded-xl shadow-lg p-6">
+      <i data-lucide="check-circle" class="w-10 h-10 mb-4 text-green-600"></i>
+      <h2 class="text-2xl font-semibold mb-2">How It Works</h2>
+      <ul class="list-disc pl-5 space-y-2">
+        <li>Subscribe to Cleansurance for just $5/month</li>
+        <li>Ride worry-free on Uber or similar platforms</li>
+        <li>Report incidents through our app or website</li>
+        <li>We cover your cleaning fees up to $70</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="text-center">
+    <h2 class="text-2xl font-bold mb-4">Sign Up Now</h2>
+    <p class="mb-6">Start protecting your wallet from unexpected cleaning fees today.</p>
+    <a href="#!" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-lg text-lg">Get Cleansurance</a>
+  </section>
+
+  <footer class="text-center mt-16 text-sm text-gray-600">
+    &copy; <script>document.write(new Date().getFullYear());</script> Cleansurance. All rights reserved.
+  </footer>
+</body>
+</html>
