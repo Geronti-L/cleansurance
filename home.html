@@ -27,7 +27,7 @@
     </div>
   </header>
 
-  <main class="max-w-4xl mx-auto px-6 py-12">
+  <main class="max-w-6xl mx-auto px-6 py-12">
     <h2 class="text-3xl font-semibold mb-4">
       Welcome, <span id="user-name" class="text-blue-800">User</span> 👋
     </h2>
@@ -42,7 +42,7 @@
         <p class="text-gray-600 mb-4">
           Had an accident in your ride? Submit your cleanup request.
         </p>
-        <div class="flex gap-4">
+        <div class="flex gap-4 flex-wrap">
           <a href="claim.html" class="bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700 shadow">
             File a Claim
           </a>
@@ -63,15 +63,23 @@
       </div>
     </div>
 
-    <!-- Admin Section -->
-    <section id="admin-section" class="hidden mt-12 bg-red-100 border-l-4 border-red-500 p-6 rounded">
+    <!-- Admin Panel -->
+    <div id="admin-section" class="hidden mt-12">
       <h3 class="text-2xl font-bold text-red-700 mb-4">🔧 Admin Controls</h3>
-      <p class="mb-4">You have access to special admin features.</p>
-      <div class="space-x-4">
-        <a href="claims.html" class="bg-red-600 text-white px-5 py-2 rounded hover:bg-red-700 shadow">Review All Claims</a>
-        <a href="manage-users.html" class="bg-red-600 text-white px-5 py-2 rounded hover:bg-red-700 shadow">Manage Users</a>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Claims Panel -->
+        <div class="bg-white rounded-xl shadow p-4 border-l-4 border-red-500">
+          <h4 class="text-xl font-semibold mb-2">All Claims</h4>
+          <ul id="claims-list" class="space-y-2 text-sm overflow-y-auto max-h-96"></ul>
+        </div>
+
+        <!-- Users Panel -->
+        <div class="bg-white rounded-xl shadow p-4 border-l-4 border-red-500">
+          <h4 class="text-xl font-semibold mb-2">All Users</h4>
+          <ul id="users-list" class="space-y-2 text-sm overflow-y-auto max-h-96"></ul>
+        </div>
       </div>
-    </section>
+    </div>
   </main>
 
   <footer class="text-center text-sm text-gray-500 py-6">
@@ -95,26 +103,64 @@
 
     const userNameSpan = document.getElementById("user-name");
     const adminSection = document.getElementById("admin-section");
+    const claimsList = document.getElementById("claims-list");
+    const usersList = document.getElementById("users-list");
+
     const adminEmail = "gerontiliparteliani@gmail.com";
 
     auth.onAuthStateChanged(async (user) => {
-      if (!user) {
-        window.location.href = "signup.html";
-        return;
-      }
+      if (!user) return (window.location.href = "signup.html");
 
       try {
         const doc = await db.collection("users").doc(user.uid).get();
         const name = doc.exists ? doc.data()?.name || user.email : user.email;
         userNameSpan.textContent = name;
 
-        if (user.email === adminEmail && adminSection) {
+        if (user.email === adminEmail) {
           adminSection.classList.remove("hidden");
+
+          // Load all claims
+          const claimsSnapshot = await db.collection("claims").orderBy("createdAt", "desc").get();
+          claimsList.innerHTML = "";
+          claimsSnapshot.forEach(claim => {
+            const data = claim.data();
+            const li = document.createElement("li");
+            li.className = "border p-2 rounded shadow-sm bg-blue-100";
+            li.innerHTML = `
+              <strong>${data.userId}</strong><br />
+              ${data.description}<br />
+              <em>${data.status || 'Pending'}</em>
+              <button class="ml-2 text-sm text-white bg-green-600 px-2 py-1 rounded" onclick="updateClaimStatus('${claim.id}', 'In Progress')">In Progress</button>
+              <button class="ml-1 text-sm text-white bg-gray-600 px-2 py-1 rounded" onclick="updateClaimStatus('${claim.id}', 'Resolved')">Resolved</button>
+            `;
+            claimsList.appendChild(li);
+          });
+
+          // Load all users
+          const usersSnapshot = await db.collection("users").get();
+          usersList.innerHTML = "";
+          usersSnapshot.forEach(doc => {
+            const userData = doc.data();
+            const li = document.createElement("li");
+            li.className = "border p-2 rounded shadow-sm bg-green-100";
+            li.textContent = `${userData.name || 'Unnamed'} - ${userData.email || 'No Email'}`;
+            usersList.appendChild(li);
+          });
         }
       } catch (err) {
         console.error("Error fetching user info:", err.message);
       }
     });
+
+    async function updateClaimStatus(claimId, newStatus) {
+      try {
+        await firebase.firestore().collection("claims").doc(claimId).update({ status: newStatus });
+        alert("Claim status updated to " + newStatus);
+        location.reload();
+      } catch (error) {
+        alert("Error updating claim: " + error.message);
+      }
+    }
 
     document.getElementById("logoutBtn").addEventListener("click", async () => {
       await auth.signOut();
