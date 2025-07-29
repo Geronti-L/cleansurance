@@ -9,19 +9,59 @@
     window.onload = () => lucide.createIcons();
   </script>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  <style>
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-in {
+    animation: fade-in 1.2s ease-out forwards;
+  }
+  .animate-fade-in.delay-200 {
+    animation-delay: 0.2s;
+  }
+  @keyframes blob {
+    0%, 100% {
+      transform: translateY(0) scale(1);
+    }
+    50% {
+      transform: translateY(-10px) scale(1.05);
+    }
+  }
+  .animate-blob {
+    animation: blob 8s infinite;
+  }
+  .animation-delay-4000 {
+    animation-delay: 4s;
+  }
+</style>
+
 </head>
 <body class="bg-gradient-to-b from-blue-50 to-white text-gray-900">
-  <!-- Hero with Logo -->
-  <section class="text-center py-12 px-4 bg-blue-100 shadow-inner">
-    <img src="images/logo.jpg" alt="Cleansurance Logo" class="mx-auto mb-6 w-24 h-24 rounded-full shadow-md object-cover" />
-    <h1 class="text-5xl font-extrabold text-blue-900 mb-3">Cleansurance</h1>
-    <p class="text-xl max-w-2xl mx-auto text-gray-700">
-      Say goodbye to unexpected $70 Uber cleaning fees. Stay covered for just $5/month.
-    </p>
-    <a href="signup.html" class="inline-block mt-6 bg-blue-600 hover:bg-blue-700 text-white text-lg font-semibold px-6 py-3 rounded-lg shadow-md">
-      Get Cleansurance
-    </a>
-  </section>
+ <!-- Hero with Animated Logo -->
+<section class="text-center py-20 px-6 bg-gradient-to-b from-blue-100 to-white shadow-inner relative overflow-hidden">
+  <!-- Animated Logo Container -->
+  <div class="relative inline-block mb-8">
+    <div class="w-32 h-32 rounded-full bg-gradient-to-tr from-blue-500 to-blue-300 p-1 animate-pulse mx-auto shadow-lg">
+      <img src="images/logo.jpg" alt="Cleansurance Logo" class="w-full h-full rounded-full object-cover border-4 border-white shadow-xl" />
+    </div>
+  </div>
+
+  <!-- Animated Headline -->
+  <h1 class="text-5xl font-extrabold text-blue-900 mb-4 animate-fade-in opacity-0">Cleansurance</h1>
+  <p class="text-xl max-w-2xl mx-auto text-gray-700 animate-fade-in opacity-0 delay-200">
+    Say goodbye to unexpected $70 Uber cleaning fees. Stay covered for just $5/month.
+  </p>
+
+  <a href="signup.html" class="inline-block mt-8 bg-blue-600 hover:bg-blue-700 text-white text-lg font-semibold px-6 py-3 rounded-lg shadow-md transition duration-300 transform hover:scale-105">
+    Get Cleansurance
+  </a>
+
+  <!-- Decorative Gradient Background Blobs -->
+  <div class="absolute top-0 left-0 w-64 h-64 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
+  <div class="absolute top-20 right-0 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-2xl opacity-20 animate-blob animation-delay-4000"></div>
+</section>
+
 
   <!-- Feature Cards -->
   <section class="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto px-4 py-16">
