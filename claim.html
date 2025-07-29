@@ -10,24 +10,38 @@
   <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-storage-compat.js"></script>
 </head>
 <body class="bg-blue-50 text-gray-800 font-sans">
-
   <header class="bg-white shadow-md p-6 flex justify-between items-center">
     <h1 class="text-2xl font-bold text-blue-700">Cleansurance</h1>
-    <a href="home.html" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded shadow">Back</a>
+    <button id="logoutBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow">
+      Logout
+    </button>
   </header>
 
-  <main class="max-w-2xl mx-auto px-6 py-12">
-    <h2 class="text-3xl font-semibold mb-6 text-blue-800">📸 File a Cleaning Claim</h2>
-    <form id="claim-form" class="space-y-6 bg-white p-6 rounded-xl shadow-md border-l-4 border-blue-400">
-      <textarea id="claim-description" placeholder="Describe what happened..." rows="4" required class="w-full border px-4 py-2 rounded"></textarea>
-      <input type="file" id="claim-photo" accept="image/*" class="w-full border px-4 py-2 rounded bg-white" />
-      <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 shadow">
+  <main class="max-w-xl mx-auto p-6 mt-12 bg-white shadow rounded-xl">
+    <h2 class="text-2xl font-bold mb-6 text-blue-800">🧼 File a Cleaning Claim</h2>
+
+    <form id="claim-form" class="space-y-4">
+      <textarea
+        id="claim-description"
+        placeholder="Describe what happened..."
+        rows="5"
+        required
+        class="w-full border px-4 py-2 rounded"
+      ></textarea>
+
+      <button
+        type="submit"
+        class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 shadow"
+      >
         Submit Claim
       </button>
-      <p id="claim-message" class="text-sm text-green-600 hidden">✅ Claim submitted successfully.</p>
+
+      <p
+        id="claim-message"
+        class="text-sm mt-4 text-green-600 hidden"
+      >✅ Claim submitted successfully.</p>
     </form>
   </main>
 
@@ -40,7 +54,7 @@
       apiKey: "AIzaSyCNgkhE0-wt42504oyS4Y61wvZzfgAFYq8",
       authDomain: "cleansurance-3a248.firebaseapp.com",
       projectId: "cleansurance-3a248",
-      storageBucket: "cleansurance-3a248.firebasestorage.app",
+      storageBucket: "cleansurance-3a248.appspot.com",
       messagingSenderId: "905965829295",
       appId: "1:905965829295:web:ba529b4e58c0fd9c31a85a",
       measurementId: "G-8QNNY08GTD"
@@ -49,48 +63,43 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
-    const storage = firebase.storage();
+
+    // Logout button
+    document.getElementById("logoutBtn").addEventListener("click", async () => {
+      await auth.signOut();
+      window.location.href = "index.html";
+    });
+
+    // Handle claim submission
+    const claimForm = document.getElementById("claim-form");
+    const claimMsg = document.getElementById("claim-message");
 
     auth.onAuthStateChanged((user) => {
       if (!user) {
         window.location.href = "signup.html";
+        return;
       }
-    });
 
-    const claimForm = document.getElementById("claim-form");
-    const claimMsg = document.getElementById("claim-message");
+      claimForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const description = document.getElementById("claim-description").value.trim();
 
-    claimForm?.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const user = auth.currentUser;
-      if (!user) return alert("Not signed in");
+        if (!description) return alert("Please describe the incident.");
 
-      const description = document.getElementById("claim-description").value.trim();
-      const fileInput = document.getElementById("claim-photo");
-      const file = fileInput.files[0];
-      let imageUrl = null;
+        try {
+          await db.collection("claims").add({
+            userId: user.uid,
+            description,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
 
-      try {
-        if (file) {
-          const storageRef = storage.ref();
-          const fileRef = storageRef.child(`claims/${user.uid}/${Date.now()}_${file.name}`);
-          await fileRef.put(file);
-          imageUrl = await fileRef.getDownloadURL();
+          claimForm.reset();
+          claimMsg.classList.remove("hidden");
+          setTimeout(() => claimMsg.classList.add("hidden"), 4000);
+        } catch (err) {
+          alert("Error submitting claim: " + err.message);
         }
-
-        await db.collection("claims").add({
-          userId: user.uid,
-          description,
-          imageUrl,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-
-        claimForm.reset();
-        claimMsg.classList.remove("hidden");
-        setTimeout(() => claimMsg.classList.add("hidden"), 4000);
-      } catch (err) {
-        alert("Error submitting claim: " + err.message);
-      }
+      });
     });
   </script>
 </body>
