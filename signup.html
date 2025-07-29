@@ -4,53 +4,83 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sign Up - Cleansurance</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-firestore-compat.js"></script>
 </head>
-<body class="bg-gradient-to-b from-white to-blue-50 text-gray-900 p-6">
-  <div class="max-w-xl mx-auto mt-12 bg-white shadow-lg rounded-xl p-8">
-    <h1 class="text-3xl font-bold mb-6 text-center text-blue-800">Join Cleansurance</h1>
-    <p class="text-center text-gray-600 mb-8">
-      Sign up now and protect yourself from unexpected cleaning fees for just $5/month.
+<body class="bg-blue-50 text-gray-800">
+  <div class="max-w-md mx-auto mt-16 p-8 bg-white shadow-lg rounded-xl">
+    <h2 class="text-3xl font-bold mb-4 text-center text-blue-800">Create Your Cleansurance Account</h2>
+    <p class="text-center text-gray-600 mb-6">
+      Sign up and protect yourself from surprise cleaning fees for just $5/month.
     </p>
-    
-    <form action="https://formspree.io/f/your-form-id" method="POST" class="space-y-6">
-      <div>
-        <label class="block mb-1 font-medium" for="name">Full Name</label>
-        <input type="text" id="name" name="name" required class="w-full border rounded px-4 py-2" />
-      </div>
-      
-      <div>
-        <label class="block mb-1 font-medium" for="email">Email Address</label>
-        <input type="email" id="email" name="_replyto" required class="w-full border rounded px-4 py-2" />
-      </div>
-      
-      <div>
-        <label class="block mb-1 font-medium" for="phone">Phone Number</label>
-        <input type="tel" id="phone" name="phone" class="w-full border rounded px-4 py-2" />
-      </div>
 
-      <div>
-        <label class="block mb-1 font-medium" for="platform">Primary Ride Platform</label>
-        <select id="platform" name="platform" class="w-full border rounded px-4 py-2">
-          <option>Uber</option>
-          <option>Lyft</option>
-          <option>Both</option>
-        </select>
-      </div>
-
-      <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded text-lg">
-        Sign up for free
+    <form id="signup-form" class="space-y-4">
+      <input type="text" id="name" placeholder="Full Name" required class="w-full border px-4 py-2 rounded" />
+      <input type="email" id="email" placeholder="Email" required class="w-full border px-4 py-2 rounded" />
+      <input type="password" id="password" placeholder="Password" required class="w-full border px-4 py-2 rounded" />
+      <select id="platform" class="w-full border px-4 py-2 rounded">
+        <option>Uber</option>
+        <option>Lyft</option>
+        <option>Both</option>
+      </select>
+      <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
+        Sign Up
       </button>
     </form>
 
-    <p class="text-center text-sm text-gray-500 mt-6">
-      By signing up, you agree to our <a href="#" class="underline">Terms of Service</a>.
-    </p>
+    <p id="error-msg" class="text-red-500 text-sm mt-4 text-center hidden"></p>
   </div>
 
-  <footer class="text-center mt-12 text-sm text-gray-600">
+  <footer class="text-center mt-10 text-sm text-gray-600">
     &copy; <script>document.write(new Date().getFullYear());</script> Cleansurance. All rights reserved.
   </footer>
+
+  <script>
+    // Your Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyCNgkhE0-wt42504oyS4Y61wvZzfgAFYq8",
+      authDomain: "cleansurance-3a248.firebaseapp.com",
+      projectId: "cleansurance-3a248",
+      storageBucket: "cleansurance-3a248.firebasestorage.app",
+      messagingSenderId: "905965829295",
+      appId: "1:905965829295:web:ba529b4e58c0fd9c31a85a",
+      measurementId: "G-8QNNY08GTD"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    const form = document.getElementById('signup-form');
+    const errorMsg = document.getElementById('error-msg');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = form.name.value.trim();
+      const email = form.email.value.trim();
+      const password = form.password.value;
+      const platform = form.platform.value;
+
+      try {
+        const userCred = await auth.createUserWithEmailAndPassword(email, password);
+        await db.collection('users').doc(userCred.user.uid).set({
+          name,
+          email,
+          platform,
+          createdAt: new Date()
+        });
+
+        // Redirect to confirmation page (or dashboard/payment page later)
+        window.location.href = 'thankyou.html';
+      } catch (error) {
+        errorMsg.textContent = error.message;
+        errorMsg.classList.remove('hidden');
+      }
+    });
+  </script>
 </body>
 </html>
-
