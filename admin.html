@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard - Cleansurance</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-firestore-compat.js"></script>
+</head>
+<body class="bg-blue-50 text-gray-800 font-sans">
+  <header class="bg-white shadow-md p-6 flex justify-between items-center">
+    <a href="home.html" class="text-2xl font-bold text-blue-700 hover:underline">
+      Cleansurance
+    </a>
+    <button id="logoutBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow">
+      Logout
+    </button>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-6 py-12">
+    <h2 class="text-3xl font-semibold mb-8 text-blue-800">🛠️ Admin Claim Review</h2>
+    <div id="claims-container" class="space-y-6"></div>
+  </main>
+
+  <footer class="text-center text-sm text-gray-500 py-6">
+    &copy; <script>document.write(new Date().getFullYear());</script> Cleansurance. All rights reserved.
+  </footer>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCNgkhE0-wt42504oyS4Y61wvZzfgAFYq8",
+      authDomain: "cleansurance-3a248.firebaseapp.com",
+      projectId: "cleansurance-3a248",
+      storageBucket: "cleansurance-3a248.appspot.com",
+      messagingSenderId: "905965829295",
+      appId: "1:905965829295:web:ba529b4e58c0fd9c31a85a"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    const container = document.getElementById("claims-container");
+
+    auth.onAuthStateChanged(async (user) => {
+      if (!user) return (window.location.href = "signup.html");
+      // Load claims if authenticated (later: restrict to admin)
+      const snapshot = await db.collection("claims").orderBy("createdAt", "desc").get();
+      snapshot.forEach((doc) => {
+        const claim = doc.data();
+        const el = document.createElement("div");
+        el.className = "bg-white p-6 rounded-xl shadow border-l-4 border-blue-500";
+        el.innerHTML = `
+          <p class="mb-2"><strong>User ID:</strong> ${claim.userId}</p>
+          <p class="mb-2"><strong>Description:</strong> ${claim.description}</p>
+          <p class="mb-2 text-sm text-gray-500">${claim.createdAt?.toDate().toLocaleString() || "Unknown time"}</p>
+          <button class="mt-2 bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700">Mark as Reviewed</button>
+        `;
+        container.appendChild(el);
+      });
+    });
+
+    document.getElementById("logoutBtn").addEventListener("click", async () => {
+      await auth.signOut();
+      window.location.href = "index.html";
+    });
+  </script>
+</body>
+</html>
