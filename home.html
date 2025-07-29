@@ -10,6 +10,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-storage-compat.js"></script>
 </head>
 <body class="bg-blue-50 text-gray-800 font-sans">
 
@@ -24,11 +25,12 @@
     <h2 class="text-3xl font-semibold mb-4">Welcome, <span id="user-name" class="text-blue-800">User</span> 👋</h2>
     <p class="mb-8 text-lg">You're covered and ready to ride. Here's what you can do:</p>
 
+    <!-- Cards -->
     <div class="grid md:grid-cols-2 gap-8">
       <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500">
         <h3 class="text-xl font-bold mb-2">🧼 File a Cleaning Claim</h3>
-        <p class="text-gray-600 mb-4">Had an accident in your ride? Submit your cleanup request.</p>
-        <a href="#" class="inline-block bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700 shadow">
+        <p class="text-gray-600 mb-4">Had an accident in your ride? Submit your cleanup request below.</p>
+        <a href="#file-claim" class="inline-block bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700 shadow">
           File a Claim
         </a>
       </div>
@@ -41,6 +43,19 @@
         </a>
       </div>
     </div>
+
+    <!-- CLAIM FORM -->
+    <section id="file-claim" class="mt-16 bg-white p-8 rounded-xl shadow-md border-l-4 border-blue-400">
+      <h3 class="text-2xl font-bold mb-4 text-blue-800">📸 File a Claim</h3>
+      <form id="claim-form" class="space-y-4">
+        <textarea id="claim-description" placeholder="Describe what happened..." rows="4" required class="w-full border px-4 py-2 rounded"></textarea>
+        <input type="file" id="claim-photo" accept="image/*" class="w-full border px-4 py-2 rounded bg-white" />
+        <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
+          Submit Claim
+        </button>
+        <p id="claim-message" class="text-sm mt-4 text-green-600 hidden">✅ Claim submitted successfully.</p>
+      </form>
+    </section>
   </main>
 
   <footer class="text-center text-sm text-gray-500 py-6">
@@ -48,7 +63,6 @@
   </footer>
 
   <script>
-    // Your Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyCNgkhE0-wt42504oyS4Y61wvZzfgAFYq8",
       authDomain: "cleansurance-3a248.firebaseapp.com",
@@ -62,6 +76,7 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
+    const storage = firebase.storage();
 
     const userNameSpan = document.getElementById("user-name");
 
@@ -84,6 +99,46 @@
       await auth.signOut();
       window.location.href = "index.html";
     });
+
+    // Handle Claim Form
+    const claimForm = document.getElementById("claim-form");
+    const claimMsg = document.getElementById("claim-message");
+
+    claimForm?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const user = auth.currentUser;
+      if (!user) return alert("Not signed in");
+
+      const description = document.getElementById("claim-description").value.trim();
+      const fileInput = document.getElementById("claim-photo");
+      const file = fileInput.files[0];
+      let imageUrl = null;
+
+      try {
+        // Upload image if provided
+        if (file) {
+          const storageRef = storage.ref();
+          const fileRef = storageRef.child(`claims/${user.uid}/${Date.now()}_${file.name}`);
+          await fileRef.put(file);
+          imageUrl = await fileRef.getDownloadURL();
+        }
+
+        // Save claim to Firestore
+        await db.collection("claims").add({
+          userId: user.uid,
+          description,
+          imageUrl,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        claimForm.reset();
+        claimMsg.classList.remove("hidden");
+        setTimeout(() => claimMsg.classList.add("hidden"), 4000);
+      } catch (err) {
+        alert("Error submitting claim: " + err.message);
+      }
+    });
   </script>
 </body>
 </html>
+
