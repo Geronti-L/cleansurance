@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login - Cleansurance</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-auth-compat.js"></script>
+</head>
+<body class="bg-blue-50 text-gray-800 font-sans">
+
+  <div class="max-w-md mx-auto mt-20 p-8 bg-white shadow-lg rounded-xl">
+    <h2 class="text-3xl font-bold mb-4 text-center text-blue-800">Log In to Cleansurance</h2>
+    <p class="text-center text-gray-600 mb-6">
+      Welcome back. Let’s keep you protected.
+    </p>
+
+    <form id="login-form" class="space-y-4">
+      <input type="email" id="email" placeholder="Email" required class="w-full border px-4 py-2 rounded" />
+      <input type="password" id="password" placeholder="Password" required class="w-full border px-4 py-2 rounded" />
+      <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
+        Log In
+      </button>
+    </form>
+
+    <p id="error-msg" class="text-red-500 text-sm mt-4 text-center hidden"></p>
+
+    <p class="text-center text-sm text-gray-600 mt-6">
+      Don't have an account?
+      <a href="signup.html" class="text-blue-600 hover:underline">Sign up here</a>
+    </p>
+  </div>
+
+  <footer class="text-center text-sm text-gray-500 mt-10">
+    &copy; <script>document.write(new Date().getFullYear());</script> Cleansurance. All rights reserved.
+  </footer>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCNgkhE0-wt42504oyS4Y61wvZzfgAFYq8",
+      authDomain: "cleansurance-3a248.firebaseapp.com",
+      projectId: "cleansurance-3a248",
+      storageBucket: "cleansurance-3a248.firebasestorage.app",
+      messagingSenderId: "905965829295",
+      appId: "1:905965829295:web:ba529b4e58c0fd9c31a85a",
+      measurementId: "G-8QNNY08GTD"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    const form = document.getElementById('login-form');
+    const errorMsg = document.getElementById('error-msg');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = form.email.value.trim();
+      const password = form.password.value;
+
+      try {
+        await auth.signInWithEmailAndPassword(email, password);
+        window.location.href = 'home.html'; // success → go to dashboard
+      } catch (error) {
+        errorMsg.textContent = error.message;
+        errorMsg.classList.remove('hidden');
+      }
+    });
+  </script>
+</body>
+</html>
