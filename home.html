@@ -81,19 +81,27 @@
     const userNameSpan = document.getElementById("user-name");
 
     auth.onAuthStateChanged(async (user) => {
-      if (!user) {
-        window.location.href = "signup.html";
-        return;
-      }
+  if (!user) {
+    window.location.href = "signup.html";
+    return;
+  }
 
-      const doc = await db.collection("users").doc(user.uid).get();
-      if (doc.exists) {
-        const { name } = doc.data();
-        userNameSpan.textContent = name;
-      } else {
-        userNameSpan.textContent = "User";
-      }
-    });
+  try {
+    const doc = await db.collection("users").doc(user.uid).get();
+    if (doc.exists) {
+      const userData = doc.data();
+      const name = userData?.name || user.email || "User";
+      userNameSpan.textContent = name;
+    } else {
+      console.warn("User document not found in Firestore.");
+      userNameSpan.textContent = user.email || "User";
+    }
+  } catch (err) {
+    console.error("Failed to fetch user name:", err.message);
+    userNameSpan.textContent = "User";
+  }
+});
+
 
     document.getElementById("logoutBtn").addEventListener("click", async () => {
       await auth.signOut();
