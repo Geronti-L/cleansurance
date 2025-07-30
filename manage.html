@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manage My Plan - Cleansurance</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-firestore-compat.js"></script>
+</head>
+<body class="bg-blue-50 text-gray-800 font-sans">
+
+  <header class="bg-white shadow-md p-6 flex justify-between items-center">
+    <a href="home.html" class="text-2xl font-bold text-blue-700 hover:underline">Cleansurance</a>
+    <button id="logoutBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow">Logout</button>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-6 py-12">
+    <h1 class="text-3xl font-semibold mb-6">📋 Manage My Plan</h1>
+
+    <div id="plan-section" class="bg-white p-6 rounded-lg shadow border-l-4 border-green-500">
+      <h2 class="text-xl font-bold mb-4">Your Current Plan</h2>
+      <p id="plan-status" class="mb-6 text-gray-700">Loading your plan...</p>
+
+      <div id="plan-actions" class="space-x-4">
+        <!-- Buttons will be inserted dynamically -->
+      </div>
+    </div>
+  </main>
+
+  <footer class="text-center text-sm text-gray-500 py-6">
+    &copy; <script>document.write(new Date().getFullYear());</script> Cleansurance. All rights reserved.
+  </footer>
+
+  <script>
+    // Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyCNgkhE0-wt42504oyS4Y61wvZzfgAFYq8",
+      authDomain: "cleansurance-3a248.firebaseapp.com",
+      projectId: "cleansurance-3a248",
+      storageBucket: "cleansurance-3a248.firebasestorage.app",
+      messagingSenderId: "905965829295",
+      appId: "1:905965829295:web:ba529b4e58c0fd9c31a85a",
+      measurementId: "G-8QNNY08GTD"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    const planStatus = document.getElementById("plan-status");
+    const planActions = document.getElementById("plan-actions");
+
+    let currentUser;
+
+    auth.onAuthStateChanged(async (user) => {
+      if (!user) {
+        window.location.href = "signup.html";
+        return;
+      }
+      currentUser = user;
+      await loadPlan();
+    });
+
+    async function loadPlan() {
+      const userDoc = await db.collection("users").doc(currentUser.uid).get();
+      const plan = userDoc.exists ? userDoc.data().plan || null : null;
+
+      if (!plan) {
+        planStatus.textContent = "You currently do not have a plan.";
+        planActions.innerHTML = `
+          <button onclick="purchasePlan()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Purchase Plan ($5/month)</button>
+        `;
+      } else {
+        planStatus.textContent = `Active Plan: ${plan.name} - $${plan.price}/month`;
+        planActions.innerHTML = `
+          <button onclick="cancelPlan()" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Cancel Plan</button>
+        `;
+      }
+    }
+
+    async function purchasePlan() {
+      await db.collection("users").doc(currentUser.uid).set({
+        plan: { name: "Cleansurance Basic", price: 5, startDate: new Date() }
+      }, { merge: true });
+
+      alert("✅ Plan purchased successfully!");
+      loadPlan();
+    }
+
+    async function cancelPlan() {
+      await db.collection("users").doc(currentUser.uid).update({
+        plan: firebase.firestore.FieldValue.delete()
+      });
+
+      alert("❌ Plan canceled successfully.");
+      loadPlan();
+    }
+
+    document.getElementById("logoutBtn").addEventListener("click", async () => {
+      await auth.signOut();
+      window.location.href = "index.html";
+    });
+  </script>
+</body>
+</html>
