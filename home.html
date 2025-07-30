@@ -53,15 +53,41 @@
       </div>
 
       <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-green-500">
-        <h3 class="text-xl font-bold mb-2">📋 Manage My Plan</h3>
-        <p class="text-gray-600 mb-4">
-          View your subscription and update your contact info.
-        </p>
-        <a href="#" class="inline-block bg-green-600 text-white px-5 py-2 rounded hover:bg-green-700 shadow">
-          Update Details
-        </a>
-      </div>
+  <h3 class="text-xl font-bold mb-2">📋 Manage My Plan</h3>
+  <p class="text-gray-600 mb-4">
+    View your subscription and update your contact info.
+  </p>
+  <button onclick="document.getElementById('manageModal').classList.remove('hidden')" 
+    class="inline-block bg-green-600 text-white px-5 py-2 rounded hover:bg-green-700 shadow">
+    Update Details
+  </button>
+</div>
+
+<!-- Modal -->
+<div id="manageModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+  <div class="bg-white p-6 rounded-lg w-96 shadow-lg relative">
+    <button onclick="document.getElementById('manageModal').classList.add('hidden')" 
+      class="absolute top-2 right-2 text-gray-500 hover:text-gray-800">
+      ✕
+    </button>
+    <h2 class="text-2xl font-bold mb-4">Manage My Plan</h2>
+    <p class="mb-4 text-gray-600">Update your subscription or contact info here.</p>
+
+    <input type="text" placeholder="New Email" class="w-full p-2 border rounded mb-4">
+    <input type="text" placeholder="New Phone" class="w-full p-2 border rounded mb-4">
+
+    <div class="flex justify-end gap-2">
+      <button onclick="document.getElementById('manageModal').classList.add('hidden')" 
+        class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">
+        Cancel
+      </button>
+      <button class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+        Save
+      </button>
     </div>
+  </div>
+</div>
+
 
     <!-- Admin Panel -->
     <div id="admin-section" class="hidden mt-12">
