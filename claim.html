@@ -108,30 +108,33 @@
         if (!description) return alert("Please describe the incident.");
 
         try {
-          let imageUrl = null;
+  let imageUrl = null;
 
-          // If an image is uploaded, save it to Firebase Storage
-          if (file) {
-            const storageRef = storage.ref();
-            const fileRef = storageRef.child(`claims/${user.uid}/${Date.now()}_${file.name}`);
-            await fileRef.put(file);
-            imageUrl = await fileRef.getDownloadURL();
-          }
+  if (file) {
+    try {
+      const storageRef = storage.ref();
+      const fileRef = storageRef.child(`claims/${user.uid}/${Date.now()}_${file.name}`);
+      await fileRef.put(file);
+      imageUrl = await fileRef.getDownloadURL();
+    } catch (uploadError) {
+      alert("⚠️ Claim saved, but receipt upload failed: " + uploadError.message);
+    }
+  }
 
-          // Save claim in Firestore
-          await db.collection("claims").add({
-            userId: user.uid,
-            description,
-            imageUrl,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-          });
+  await db.collection("claims").add({
+    userId: user.uid,
+    description,
+    imageUrl,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
 
-          claimForm.reset();
-          claimMsg.classList.remove("hidden");
-          setTimeout(() => claimMsg.classList.add("hidden"), 4000);
-        } catch (err) {
-          alert("Error submitting claim: " + err.message);
-        }
+  claimForm.reset();
+  claimMsg.classList.remove("hidden");
+  setTimeout(() => claimMsg.classList.add("hidden"), 4000);
+} catch (err) {
+  alert("Error submitting claim: " + err.message);
+}
+
       });
     });
   </script>
