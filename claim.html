@@ -35,12 +35,19 @@
       ></textarea>
 
       <!-- File Upload -->
-      <input
-        type="file"
-        id="claim-photo"
-        accept="image/*"
-        class="w-full border px-4 py-2 rounded bg-white"
-      />
+<label for="claim-photo" class="block font-semibold text-gray-700">
+  📎 Attach your rideshare receipt (PDF or screenshot)
+</label>
+<input
+  type="file"
+  id="claim-photo"
+  accept="image/*,.pdf"
+  class="w-full border px-4 py-2 rounded bg-white"
+/>
+<p class="text-xs text-gray-500 mt-1">
+  Please upload your Uber, Lyft, or other rideshare receipt so we can verify your claim.
+</p>
+
 
       <button
         type="submit"
