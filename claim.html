@@ -10,12 +10,13 @@
   <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-storage-compat.js"></script>
 </head>
 <body class="bg-blue-50 text-gray-800 font-sans">
   <header class="bg-white shadow-md p-6 flex justify-between items-center">
     <a href="home.html" class="text-2xl font-bold text-blue-700 hover:underline">
-  Cleansurance
-</a>
+      Cleansurance
+    </a>
     <button id="logoutBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow">
       Logout
     </button>
@@ -32,6 +33,14 @@
         required
         class="w-full border px-4 py-2 rounded"
       ></textarea>
+
+      <!-- File Upload -->
+      <input
+        type="file"
+        id="claim-photo"
+        accept="image/*"
+        class="w-full border px-4 py-2 rounded bg-white"
+      />
 
       <button
         type="submit"
@@ -65,6 +74,7 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
+    const storage = firebase.storage();
 
     // Logout button
     document.getElementById("logoutBtn").addEventListener("click", async () => {
@@ -85,13 +95,27 @@
       claimForm.addEventListener("submit", async (e) => {
         e.preventDefault();
         const description = document.getElementById("claim-description").value.trim();
+        const fileInput = document.getElementById("claim-photo");
+        const file = fileInput.files[0];
 
         if (!description) return alert("Please describe the incident.");
 
         try {
+          let imageUrl = null;
+
+          // If an image is uploaded, save it to Firebase Storage
+          if (file) {
+            const storageRef = storage.ref();
+            const fileRef = storageRef.child(`claims/${user.uid}/${Date.now()}_${file.name}`);
+            await fileRef.put(file);
+            imageUrl = await fileRef.getDownloadURL();
+          }
+
+          // Save claim in Firestore
           await db.collection("claims").add({
             userId: user.uid,
             description,
+            imageUrl,
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
           });
 
