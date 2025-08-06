@@ -26,41 +26,35 @@
     <h2 class="text-2xl font-bold mb-6 text-blue-800">🧼 File a Cleaning Claim</h2>
 
     <form id="claim-form" class="space-y-4">
-      <textarea
-        id="claim-description"
-        placeholder="Describe what happened..."
-        rows="5"
-        required
-        class="w-full border px-4 py-2 rounded"
-      ></textarea>
+  <textarea
+    id="claim-description"
+    placeholder="Describe what happened..."
+    rows="5"
+    required
+    class="w-full border px-4 py-2 rounded"
+  ></textarea>
 
-      <!-- File Upload -->
-<label for="claim-photo" class="block font-semibold text-gray-700">
-  📎 Attach your rideshare receipt (PDF or screenshot)
-</label>
-<input
-  type="file"
-  id="claim-photo"
-  accept="image/*,.pdf"
-  class="w-full border px-4 py-2 rounded bg-white"
-/>
-<p class="text-xs text-gray-500 mt-1">
-  Please upload your Uber, Lyft, or other rideshare receipt so we can verify your claim.
-</p>
+  <input
+    type="email"
+    id="receipt-email"
+    placeholder="Enter your rideshare receipt email"
+    required
+    class="w-full border px-4 py-2 rounded"
+  />
 
+  <button
+    type="submit"
+    class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 shadow"
+  >
+    Submit Claim
+  </button>
 
-      <button
-        type="submit"
-        class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 shadow"
-      >
-        Submit Claim
-      </button>
+  <p
+    id="claim-message"
+    class="text-sm mt-4 text-green-600 hidden"
+  >✅ Claim submitted successfully.</p>
+</form>
 
-      <p
-        id="claim-message"
-        class="text-sm mt-4 text-green-600 hidden"
-      >✅ Claim submitted successfully.</p>
-    </form>
   </main>
 
   <footer class="text-center text-sm text-gray-500 py-6">
