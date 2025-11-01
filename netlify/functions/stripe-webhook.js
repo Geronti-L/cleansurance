@@ -21,9 +21,9 @@ try {
 
 // --- Helper Functions to get plan details from Price IDs ---
 // You MUST fill these in with your real Price IDs from Stripe
-const PRICE_ID_BASIC = "price_...YOUR_BASIC_ID...";
-const PRICE_ID_PLUS = "price_...YOUR_PLUS_ID...";
-const PRICE_ID_PREMIUM = "price_...YOUR_PREMIUM_ID...";
+const PRICE_ID_BASIC = "price_...prod_TLB65SIshD02dK...";
+const PRICE_ID_PLUS = "price_...prod_TLB6MKNU99DHZQ...";
+const PRICE_ID_PREMIUM = "price_...prod_TLB6gIz6nSXhFm...";
 
 function getPlanName(planId) {
   switch (planId) {
