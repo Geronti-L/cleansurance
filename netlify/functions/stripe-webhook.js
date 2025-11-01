@@ -20,11 +20,16 @@ try {
 }
 
 // --- Helper Functions to get plan details from Price IDs ---
-// FIX: YOU MUST fill these in with your real Price IDs from Stripe
-// These MUST match the IDs used in your `manage.html` file.
-const PRICE_ID_BASIC = "price_...prod_TLB65SIshD02dK..."; // /* FIX: Add your Basic Price ID */
-const PRICE_ID_PLUS = "price_...prod_TLB6MKNU99DHZQ..."; // /* FIX: Add your Plus Price ID */
-const PRICE_ID_PREMIUM = "price_...prod_TLB6gIz6nSXhFm..."; // /* FIX: Add your Premium Price ID */
+// These are now updated with your specific business's product IDs.
+
+// UPDATED with your keys:
+const PRICE_ID_BASIC = "price_1SOUkKIgrOC6v5CQgAROfkuc"; 
+// UPDATED with your keys:
+const PRICE_ID_PLUS = "price_1SOUkXIgrOC6v5CQzEKnBlYv"; 
+// UPDATED with your keys:
+const PRICE_ID_PREMIUM = "price_1SOUkeIgrOC6v5CQjSxgCQsP"; 
+// --------------------------------------------------------
+
 
 function getPlanName(planId) {
   switch (planId) {
@@ -132,3 +137,4 @@ exports.handler = async (event) => {
   // Acknowledge receipt of the event
   return { statusCode: 200 };
 };
+
