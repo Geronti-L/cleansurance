@@ -1,0 +1,18 @@
+# Netlify Configuration File
+
+[build]
+  # This tells Netlify where your serverless functions live.
+  # This is likely already set in the UI, but it's good practice.
+  functions = "netlify/functions"
+
+[build.secrets_scan]
+  # This is the fix for your build error.
+  # Netlify's scanner sees your public "projectId" (cleansurance-3a248)
+  # in your HTML files and thinks it's a leaked secret, stopping the build.
+  #
+  # This line tells the scanner: "It's okay, I know.
+  # Please do not fail the build if you see the value for FIREBASE_PROJECT_ID."
+  #
+  # This is safe because your Firebase Project ID is public,
+  # but it keeps the scanner active for your REAL secrets (like Stripe keys).
+  omit_keys = ["FIREBASE_PROJECT_ID"]
