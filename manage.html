@@ -7,10 +7,12 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="icon" type="image/jpeg" href="images/logo.jpg">
 
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-firestore-compat.js"></script>
   
+  <!-- Stripe.js (No Firebase Functions SDK needed!) -->
   <script src="https://js.stripe.com/v3/"></script>
 </head>
 <body class="bg-blue-50 text-gray-800 font-sans">
@@ -76,16 +78,20 @@
 
   <script>
     // --- IMPORTANT ---
-    // FIX: YOU MUST FILL THESE IN
+    // PASTE YOUR KEYS FROM STRIPE DASHBOARD HERE
     
     // From Stripe Dashboard > Developers > API keys
-    const STRIPE_PUBLISHABLE_KEY = "pk_live_...YOUR_LIVE_PUBLISHABLE_KEY..."; // /* FIX: Add your Stripe Publishable Key */
+    // PASTE YOUR PUBLISHABLE KEY (pk_live_... or pk_test_...)
+    const STRIPE_PUBLISHABLE_KEY = "pk_live_51SHb7QIgrOC6v5CQO85QjkYVnLInG9nEvnXFNpJ5TBoBmfJ3dYO7s1OtF1F16ioGIRDtOFZEQLvnwDXHz4dweSdh00wR260ysu"; 
     
-    // From Stripe Dashboard > Products (Click on the price)
-    const PRICE_ID_BASIC = "price_...prod_TLB65SIshD02dK..."; // /* FIX: Add your Basic Price ID */
-    const PRICE_ID_PLUS = "price_...prod_TLB6MKNU99DHZQ..."; // /* FIX: Add your Plus Price ID */
-    const PRICE_ID_PREMIUM = "price_...prod_TLB6gIz6nSXhFm..."; // /* FIX: Add your Premium Price ID */
-    // --------------------
+    // From Stripe Dashboard > Products > (Your Product) > Pricing > API ID
+    // UPDATED with your keys:
+    const PRICE_ID_BASIC = "price_1SOUkKIgrOC6v5CQgAROfkuc"; 
+    // UPDATED with your keys:
+    const PRICE_ID_PLUS = "price_1SOUkXIgrOC6v5CQzEKnBlYv"; 
+    // UPDATED with your keys:
+    const PRICE_ID_PREMIUM = "price_1SOUkeIgrOC6v5CQjSxgCQsP"; 
+    // ----------------------------------------------------
 
     // Firebase Config (This is your existing config)
     const firebaseConfig = {
@@ -247,9 +253,9 @@
 
     document.getElementById("logoutBtn").addEventListener("click", async () => {
       await auth.signOut();
-      // FIX: Redirect to login.html, not index.html
       window.location.href = "login.html";
     });
   </script>
 </body>
 </html>
+
