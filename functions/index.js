@@ -6,15 +6,15 @@ admin.initializeApp();
 const db = admin.firestore();
 
 // --- PLACEHOLDERS ---
-// YOU MUST REPLACE THESE WITH YOUR LIVE NETLIFY DOMAIN
-const YOUR_NETLIFY_SUCCESS_URL = "https://https://cleansurance.net//home.html";
-const YOUR_NETLIFY_CANCEL_URL = "https://https://cleansurance.net//manage.html";
-const YOUR_NETLIFY_PORTAL_RETURN_URL = "https://https://cleansurance.net//home.html";
+// FIX: Corrected the URLs (removed extra https:// and //)
+// YOU MUST REPLACE "cleansurance.net" WITH YOUR LIVE NETLIFY DOMAIN
+const YOUR_NETLIFY_DOMAIN = "https://cleansurance.net";
 
 // YOU MUST REPLACE THESE WITH YOUR PRICE IDS FROM YOUR STRIPE DASHBOARD
-const PRICE_ID_BASIC = "price_...prod_TLB65SIshD02dK...";
-const PRICE_ID_PLUS = "price_...prod_TLB6MKNU99DHZQ...";
-const PRICE_ID_PREMIUM = "price_...prod_TLB6gIz6nSXhFm...";
+// --- GET THESE FROM YOUR STRIPE DASHBOARD > PRODUCTS ---
+const PRICE_ID_BASIC = "price_...YOUR_BASIC_ID...";
+const PRICE_ID_PLUS = "price_...YOUR_PLUS_ID...";
+const PRICE_ID_PREMIUM = "price_...YOUR_PREMIUM_ID...";
 // ------------------------------------
 
 
@@ -80,7 +80,7 @@ exports.createStripeCheckout = functions.https.onCall(
             quantity: 1,
           },
         ],
-        // Set success/cancel URLs to your *Netlify* site
+        // FIX: Set success/cancel URLs to your *Netlify* site
         success_url: `${YOUR_NETLIFY_DOMAIN}/home.html`,
         cancel_url: `${YOUR_NETLIFY_DOMAIN}/manage.html`,
         metadata: {
@@ -117,6 +117,7 @@ exports.createStripePortal = functions.https.onCall(async (data, context) => {
 
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: stripeCustomerId,
+      // FIX: Use your Netlify domain
       return_url: `${YOUR_NETLIFY_DOMAIN}/home.html`, // Your Netlify site
     });
 
