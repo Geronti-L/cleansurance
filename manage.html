@@ -1,75 +1,258 @@
-const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
-const { initializeApp, cert } = require("firebase-admin/app");
-const { getFirestore } = require("firebase-admin/firestore");
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manage My Plan - Cleansurance</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="icon" type="image/jpeg" href="images/logo.jpg">
 
-// Get our secrets from Netlify environment variables
-const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-const projectId = process.env.FIREBASE_PROJECT_ID;
-
-// Connect to our Firebase database
-let db;
-try {
-  const app = initializeApp({
-    credential: cert(serviceAccount),
-    projectId: projectId,
-  });
-  db = getFirestore(app);
-} catch (e) {
-  console.error("Failed to initialize Firebase Admin:", e.message);
-}
-
-/**
- * Gets or creates a Stripe Customer ID for a Firebase user.
- */
-async function getOrCreateStripeCustomer(uid) {
-  if (!db) {
-    throw new Error("Database not initialized.");
-  }
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-firestore-compat.js"></script>
   
-  const userRef = db.collection("users").doc(uid);
-  const userDoc = await userRef.get();
-  const userData = userDoc.data();
+  <!-- Stripe.js (No Firebase Functions SDK needed!) -->
+  <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body class="bg-blue-50 text-gray-800 font-sans">
 
-  if (userData && userData.stripeCustomerId) {
-    return userData.stripeCustomerId;
-  }
+  <header class="bg-white shadow-md p-6 flex justify-between items-center">
+    <a href="home.html" class="text-2xl font-bold text-blue-700 hover:underline">Cleansurance</a>
+    <button id="logoutBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow">Logout</button>
+  </header>
 
-  const customer = await stripe.customers.create({
-    email: userData.email,
-    metadata: { firebaseUID: uid },
-  });
-  await userRef.set({ stripeCustomerId: customer.id }, { merge: true });
-  return customer.id;
-}
+  <main class="max-w-5xl mx-auto px-6 py-12">
+    <h1 class="text-3xl font-semibold mb-6">📋 Manage My Plan</h1>
 
-// This is the main function
-exports.handler = async (event) => {
-  const { uid } = JSON.parse(event.body);
+    <div id="plan-section" class="bg-white p-6 rounded-lg shadow mb-12">
+      <h2 class="text-xl font-bold mb-4">Your Subscription</h2>
+      <div id="plan-details">
+        <p class="mb-6 text-gray-700 animate-pulse">Loading your plan...</p>
+      </div>
+    </div>
 
-  if (!uid) {
-    return {
-      statusCode: 401,
-      body: JSON.stringify({ error: "You must be logged in." }),
+    <div id="pricing-table" class="hidden">
+      <h3 class="text-2xl font-bold text-blue-800 mb-10 text-center">💳 Choose Your Plan</h3>
+      <div class="grid md:grid-cols-3 gap-8">
+        <div class="bg-blue-50 p-6 rounded-xl shadow">
+          <h3 class="font-bold text-xl mb-2">Basic</h3>
+          <p class="text-4xl font-extrabold text-blue-800 mb-4">$5<span class="text-lg">/mo</span></p>
+          <ul class="mb-6 text-gray-700 space-y-2">
+            <li>✔ Covers up to $100 per claim</li>
+            <li>✔ Unlimited rides</li>
+          </ul>
+          <button id="btn-basic" class="w-full bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700">
+            Subscribe
+          </button>
+        </div>
+        <div class="bg-green-50 p-6 rounded-xl shadow border-2 border-green-400">
+          <h3 class="font-bold text-xl mb-2">Plus <span class="text-green-600 text-sm">(Most Popular)</span></h3>
+          <p class="text-4xl font-extrabold text-green-800 mb-4">$8<span class="text-lg">/mo</span></p>
+          <ul class="mb-6 text-gray-700 space-y-2">
+            <li>✔ Covers up to $150 per claim</li>
+            <li>✔ Priority support</li>
+          </ul>
+          <button id="btn-plus" class="w-full bg-green-600 text-white px-5 py-2 rounded hover:bg-green-700">
+            Subscribe
+          </button>
+        </div>
+        <div class="bg-yellow-50 p-6 rounded-xl shadow">
+          <h3 class="font-bold text-xl mb-2">Premium</h3>
+          <p class="text-4xl font-extrabold text-yellow-800 mb-4">$12<span class="text-lg">/mo</span></p>
+          <ul class="mb-6 text-gray-700 space-y-2">
+            <li>✔ Covers up to $200 per claim</li>
+            <li>✔ Instant payouts</li>
+          </ul>
+          <button id="btn-premium" class="w-full bg-yellow-600 text-white px-5 py-2 rounded hover:bg-yellow-700">
+            Subscribe
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="text-center text-sm text-gray-500 py-6">
+    &copy; <script>document.write(new Date().getFullYear());</script> Cleansurance. All rights reserved.
+  </footer>
+
+  <script>
+    // --- IMPORTANT ---
+    // YOU MUST FILL THESE IN
+    
+    // From Stripe Dashboard > Developers > API keys
+    const STRIPE_PUBLISHABLE_KEY = "pk_live_...YOUR_PUBLISHABLE_KEY..."; 
+    
+    // From Stripe Dashboard > Products (Click on the price)
+    const PRICE_ID_BASIC = "price_...YOUR_BASIC_ID...";
+    const PRICE_ID_PLUS = "price_...YOUR_PLUS_ID...";
+    const PRICE_ID_PREMIUM = "price_...YOUR_PREMIUM_ID...";
+    // --------------------
+
+    // Firebase Config (This is your existing config)
+    const firebaseConfig = {
+      apiKey: "AIzaSyCNgkhE0-wt42504oyS4Y61wvZzfgAFYq8",
+      authDomain: "cleansurance-3a248.firebaseapp.com",
+      projectId: "cleansurance-3a248",
+      storageBucket: "cleansurance-3a248.appspot.com",
+      messagingSenderId: "905965829295",
+      appId: "1:905965829295:web:ba529b4e58c0fd9c31a85a",
+      measurementId: "G-8QNNY08GTD"
     };
-  }
 
-  try {
-    const stripeCustomerId = await getOrCreateStripeCustomer(uid);
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
 
-    const portalSession = await stripe.billingPortal.sessions.create({
-      customer: stripeCustomerId,
-      return_url: `${process.env.URL}/home.html`, // Your Netlify site
+    const planDetails = document.getElementById("plan-details");
+    const pricingTable = document.getElementById("pricing-table");
+
+    document.getElementById("btn-basic").addEventListener("click", () => purchasePlan(PRICE_ID_BASIC));
+    document.getElementById("btn-plus").addEventListener("click", () => purchasePlan(PRICE_ID_PLUS));
+    document.getElementById("btn-premium").addEventListener("click", () => purchasePlan(PRICE_ID_PREMIUM));
+
+    let currentUser;
+
+    auth.onAuthStateChanged(async (user) => {
+      if (!user) {
+        window.location.href = "signup.html";
+        return;
+      }
+      currentUser = user;
+      
+      // Use onSnapshot for real-time updates from your webhook
+      db.collection("users").doc(currentUser.uid)
+        .onSnapshot(doc => {
+          loadPlan(doc);
+        }, err => {
+          console.error("Error listening to user doc: ", err);
+          planDetails.innerHTML = `<p class="text-red-600">Error loading plan.</p>`;
+        });
     });
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ url: portalSession.url }),
-    };
-  } catch (error) {
-    console.error("Error creating Stripe portal:", error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: error.message }),
-    };
-  }
-};
+    function loadPlan(userDoc) {
+      if (!userDoc.exists) {
+        planDetails.innerHTML = `<p class="text-red-600">Error: User not found.</p>`;
+        return;
+      }
+      const plan = userDoc.data().plan || null;
+
+      if (plan && (plan.status === 'active' || plan.status === 'trialing')) {
+        const endDate = plan.endDate.toDate().toLocaleDateString();
+        planDetails.innerHTML = `
+          <p class="text-lg">Active Plan: <strong class="text-green-700">${plan.name}</strong> ($${plan.price}/month)</p>
+          <p class="text-gray-600 text-sm mb-6">Status: <span class="font-semibold">${plan.status}</span>. Renews on: ${endDate}</p>
+          <button onclick="manageBilling()" class="bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700 shadow">
+            Manage Billing &amp; Cancel Plan
+          </button>
+        `;
+        pricingTable.classList.add("hidden");
+        planDetails.classList.remove("animate-pulse");
+      } else if (plan && plan.status === 'canceled') {
+         const endDate = plan.endDate.toDate().toLocaleDateString();
+         planDetails.innerHTML = `
+          <p class="text-lg">Plan: <strong class="text-gray-700">${plan.name}</strong></p>
+          <p class="text-gray-600 text-sm mb-6 font-semibold">Status: <span class="text-red-600">Canceled</span>. Access ends on: ${endDate}</p>
+          <button onclick="manageBilling()" class="bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700 shadow">
+            Re-subscribe or Manage
+          </button>
+        `;
+        pricingTable.classList.remove("hidden");
+        planDetails.classList.remove("animate-pulse");
+      } else {
+        planDetails.innerHTML = `<p class="mb-6 text-gray-700">You do not have an active plan. Please choose one below.</p>`;
+        pricingTable.classList.remove("hidden");
+        planDetails.classList.remove("animate-pulse");
+      }
+    }
+
+    // Calls your new Netlify Function
+    async function purchasePlan(priceId) {
+      if (!priceId || priceId.includes("...")) {
+        alert("Error: Price ID is not configured. Please contact support.");
+        return;
+      }
+
+      const allButtons = pricingTable.querySelectorAll('button');
+      allButtons.forEach(btn => {
+        btn.disabled = true;
+        btn.innerHTML = "Redirecting...";
+      });
+
+      try {
+        // This is the new part: call the Netlify Function
+        const response = await fetch("/.netlify/functions/create-stripe-checkout", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ priceId: priceId, uid: currentUser.uid }),
+        });
+
+        if (!response.ok) {
+          const { error } = await response.json();
+          throw new Error(error);
+        }
+
+        const { sessionId } = await response.json();
+        
+        const { error } = await stripe.redirectToCheckout({
+          sessionId: sessionId,
+        });
+
+        if (error) {
+          throw new Error(error.message);
+        }
+      } catch (error) {
+        alert("Error: " + error.message);
+        allButtons.forEach(btn => {
+          btn.disabled = false;
+          btn.innerHTML = "Subscribe";
+        });
+      }
+    }
+
+    // Calls your new Netlify Function
+    async function manageBilling() {
+      const manageButton = planDetails.querySelector('button');
+      if (manageButton) {
+        manageButton.disabled = true;
+        manageButton.innerHTML = "Redirecting to portal...";
+      }
+
+      try {
+        // Call the Netlify Function
+        const response = await fetch("/.netlify/functions/create-stripe-portal", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ uid: currentUser.uid }),
+        });
+        
+        if (!response.ok) {
+          const { error } = await response.json();
+          throw new Error(error);
+        }
+        
+        const { url } = await response.json();
+        window.location.href = url;
+      } catch (error) {
+        alert("Error: " + error.message);
+        if (manageButton) {
+          manageButton.disabled = false;
+          manageButton.innerHTML = "Manage Billing &amp; Cancel Plan";
+        }
+      }
+    }
+
+    document.getElementById("logoutBtn").addEventListener("click", async () => {
+      await auth.signOut();
+      window.location.href = "index.html";
+    });
+  </script>
+</body>
+</html>
+
+
