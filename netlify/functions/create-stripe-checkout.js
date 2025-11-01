@@ -56,7 +56,8 @@ async function getOrCreateStripeCustomer(uid) {
 }
 
 // This is the main function that runs when called
-exports.handler = async (event)_ => {
+// FIX: Removed syntax error (extra `_`)
+exports.handler = async (event) => {
   // 1. Get the data from the front-end
   const { priceId, uid } = JSON.parse(event.body);
 
