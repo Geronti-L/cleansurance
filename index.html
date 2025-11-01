@@ -7,14 +7,11 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="icon" type="image/jpeg" href="images/logo.jpg">
 
-  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-firestore-compat.js"></script>
-  <!-- IMPORTANT: Add Firebase Functions SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-functions-compat.js"></script>
 
-  <!-- IMPORTANT: Add Stripe.js -->
   <script src="https://js.stripe.com/v3/"></script>
 </head>
 <body class="bg-blue-50 text-gray-800 font-sans">
@@ -27,7 +24,6 @@
   <main class="max-w-5xl mx-auto px-6 py-12">
     <h1 class="text-3xl font-semibold mb-6">📋 Manage My Plan</h1>
 
-    <!-- This section shows the user's *current* plan -->
     <div id="plan-section" class="bg-white p-6 rounded-lg shadow mb-12">
       <h2 class="text-xl font-bold mb-4">Your Subscription</h2>
       <div id="plan-details">
@@ -35,12 +31,10 @@
       </div>
     </div>
 
-    <!-- This section shows the 3 plan options, hidden if user is active -->
     <div id="pricing-table" class="hidden">
       <h3 class="text-2xl font-bold text-blue-800 mb-10 text-center">💳 Choose Your Plan</h3>
       <div class="grid md:grid-cols-3 gap-8">
         
-        <!-- Basic Plan -->
         <div class="bg-blue-50 p-6 rounded-xl shadow">
           <h3 class="font-bold text-xl mb-2">Basic</h3>
           <p class="text-4xl font-extrabold text-blue-800 mb-4">$5<span class="text-lg">/mo</span></p>
@@ -53,7 +47,6 @@
           </button>
         </div>
         
-        <!-- Plus Plan -->
         <div class="bg-green-50 p-6 rounded-xl shadow border-2 border-green-400">
           <h3 class="font-bold text-xl mb-2">Plus <span class="text-green-600 text-sm">(Most Popular)</span></h3>
           <p class="text-4xl font-extrabold text-green-800 mb-4">$8<span class="text-lg">/mo</span></p>
@@ -66,7 +59,6 @@
           </button>
         </div>
         
-        <!-- Premium Plan -->
         <div class="bg-yellow-50 p-6 rounded-xl shadow">
           <h3 class="font-bold text-xl mb-2">Premium</h3>
           <p class="text-4xl font-extrabold text-yellow-800 mb-4">$12<span class="text-lg">/mo</span></p>
@@ -88,15 +80,15 @@
 
   <script>
     // --- IMPORTANT ---
-    // YOU MUST REPLACE THESE VALUES
+    // FIX: YOU MUST REPLACE THESE VALUES
     
     // From Stripe Dashboard > Developers > API keys
-    const STRIPE_PUBLISHABLE_KEY = "pk_test_...YOUR_PUBLISHABLE_KEY..."; 
+    const STRIPE_PUBLISHABLE_KEY = "pk_test_...YOUR_TEST_PUBLISHABLE_KEY..."; // /* FIX: Add your Stripe Publishable Key */
     
     // From Stripe Dashboard > Products (Click on the price)
-    const PRICE_ID_BASIC = "price_...YOUR_BASIC_ID...";
-    const PRICE_ID_PLUS = "price_...YOUR_PLUS_ID...";
-    const PRICE_ID_PREMIUM = "price_...YOUR_PREMIUM_ID...";
+    const PRICE_ID_BASIC = "price_...prod_TLB65SIshD02dK..."; // /* FIX: Add your Basic Price ID */
+    const PRICE_ID_PLUS = "price_...prod_TLB6MKNU99DHZQ..."; // /* FIX: Add your Plus Price ID */
+    const PRICE_ID_PREMIUM = "price_...prod_TLB6gIz6nSXhFm..."; // /* FIX: Add your Premium Price ID */
     // --------------------
 
 
@@ -243,9 +235,9 @@
 
     document.getElementById("logoutBtn").addEventListener("click", async () => {
       await auth.signOut();
-      window.location.href = "index.html";
+      // FIX: Redirect to login.html, not index.html
+      window.location.href = "login.html";
     });
   </script>
 </body>
 </html>
-
