@@ -1,0 +1,16 @@
+{
+  "name": "cleansurance-business-backend",
+  "version": "1.0.0",
+  "description": "Secure Netlify Functions for Cleansurance (Stripe + Firebase)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Luka Liparteliani",
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "firebase-admin": "^12.0.0",
+    "stripe": "^14.0.0"
+  }
+}
