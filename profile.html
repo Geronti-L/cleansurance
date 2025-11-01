@@ -8,7 +8,6 @@
   <link rel="icon" type="image/jpeg" href="images/logo.jpg">
 
 
-  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-firestore-compat.js"></script>
@@ -111,23 +110,28 @@
 
     document.getElementById("logoutBtn").addEventListener("click", async () => {
       await auth.signOut();
-      window.location.href = "index.html";
+      // FIX: Redirect to login.html, not index.html
+      window.location.href = "login.html";
     });
 
     document.getElementById("delete-account").addEventListener("click", async () => {
-      const confirmDelete = confirm("Are you sure you want to delete your account? This cannot be undone.");
+      const confirmDelete = confirm("Are you sure you want to delete your account? This will also cancel any active subscriptions. This cannot be undone.");
       if (!confirmDelete) return;
 
       const user = auth.currentUser;
       if (!user) return;
 
       try {
+        // You should ideally also trigger a backend function here to cancel
+        // their Stripe subscription via `subscriptions.del(sub_id)`.
+        // For now, we delete the user data.
         await db.collection("users").doc(user.uid).delete();
         await user.delete();
         alert("Account deleted.");
-        window.location.href = "index.html";
+        // FIX: Redirect to login.html
+        window.location.href = "login.html";
       } catch (err) {
-        alert("Error deleting account: " + err.message);
+        alert("Error deleting account. You may need to re-authenticate: " + err.message);
       }
     });
   </script>
