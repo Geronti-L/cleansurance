@@ -6,7 +6,6 @@
   <title>My Claims - Cleansurance</title>
   <script src="https://cdn.tailwindcss.com"></script>
 <link rel="icon" type="image/jpeg" href="images/logo.jpg">
-  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-firestore-compat.js"></script>
@@ -74,10 +73,15 @@
           const claim = doc.data();
           const date = claim.createdAt?.toDate().toLocaleString() || "Unknown";
           const description = claim.description || "No description provided.";
+          const status = claim.status || "Pending"; // Get status
+          const statusColor = status === 'Resolved' ? 'text-green-600' : (status === 'In Progress' ? 'text-yellow-600' : 'text-gray-500');
 
           const card = `
             <div class="bg-white rounded-lg p-6 shadow border-l-4 border-blue-500">
-              <p class="text-sm text-gray-500 mb-2">Submitted: ${date}</p>
+              <div class="flex justify-between items-center mb-2">
+                <p class="text-sm text-gray-500">Submitted: ${date}</p>
+                <span class="text-sm font-bold ${statusColor}">${status}</span>
+              </div>
               <p class="text-lg font-medium text-gray-900 mb-1">${description}</p>
               <p class="text-xs text-gray-400">Claim ID: ${doc.id}</p>
             </div>
@@ -92,7 +96,8 @@
 
     document.getElementById("logoutBtn").addEventListener("click", async () => {
       await auth.signOut();
-      window.location.href = "index.html";
+      // FIX: Redirect to login.html, not index.html
+      window.location.href = "login.html";
     });
   </script>
 </body>
