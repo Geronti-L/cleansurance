@@ -15,24 +15,24 @@ const YOUR_NETLIFY_PORTAL_RETURN_URL = "https://https://cleansurance.net//home.h
 const PRICE_ID_BASIC = "price_...prod_TLB65SIshD02dK...";
 const PRICE_ID_PLUS = "price_...prod_TLB6MKNU99DHZQ...";
 const PRICE_ID_PREMIUM = "price_...prod_TLB6gIz6nSXhFm...";
-// --------------------
+// ------------------------------------
+
 
 /**
- * Gets a Stripe Customer ID for a given Firebase user, creating one if it doesn't exist.
- * This is a robust, "lazy-loading" approach that handles existing and new users.
+ * Gets or creates a Stripe Customer ID for a Firebase user.
+ * This is robust and handles all your users automatically.
  */
 async function getOrCreateStripeCustomer(uid) {
   const userDoc = await db.collection("users").doc(uid).get();
   const userData = userDoc.data();
-  const userEmail = userData.email; // Assuming email is stored in the user doc
-
+  
   if (userData && userData.stripeCustomerId) {
     return userData.stripeCustomerId;
   }
 
   // Create a new Stripe Customer
   const customer = await stripe.customers.create({
-    email: userEmail,
+    email: userData.email, // Assumes email is in the user doc
     metadata: {
       firebaseUID: uid,
     },
@@ -43,14 +43,16 @@ async function getOrCreateStripeCustomer(uid) {
     {
       stripeCustomerId: customer.id,
     },
-    { merge: true } // Merge, doesn't overwrite existing user data
+    { merge: true } // Merge, so it doesn't overwrite other user data
   );
 
   return customer.id;
 }
 
 /**
- * Creates a Stripe Checkout session to subscribe to a plan.
+ * [Callable Function]
+ * Creates a Stripe Checkout session for a user to subscribe.
+ * This is called by your 'manage.html' page.
  */
 exports.createStripeCheckout = functions.https.onCall(
   async (data, context) => {
@@ -79,10 +81,10 @@ exports.createStripeCheckout = functions.https.onCall(
           },
         ],
         // Set success/cancel URLs to your *Netlify* site
-        success_url: YOUR_NETLIFY_SUCCESS_URL,
-        cancel_url: YOUR_NETLIFY_CANCEL_URL,
+        success_url: `${YOUR_NETLIFY_DOMAIN}/home.html`,
+        cancel_url: `${YOUR_NETLIFY_DOMAIN}/manage.html`,
         metadata: {
-          firebaseUID: uid, // Pass Firebase UID to webhook
+          firebaseUID: uid, // Pass Firebase UID to the webhook
         },
       });
 
@@ -97,7 +99,9 @@ exports.createStripeCheckout = functions.https.onCall(
 );
 
 /**
+ * [Callable Function]
  * Creates a Stripe Billing Portal session for the user to manage their subscription.
+ * This is called by your 'manage.html' page.
  */
 exports.createStripePortal = functions.https.onCall(async (data, context) => {
   if (!context.auth) {
@@ -113,7 +117,7 @@ exports.createStripePortal = functions.https.onCall(async (data, context) => {
 
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: stripeCustomerId,
-      return_url: YOUR_NETLIFY_PORTAL_RETURN_URL, // Your Netlify site
+      return_url: `${YOUR_NETLIFY_DOMAIN}/home.html`, // Your Netlify site
     });
 
     return {
@@ -126,11 +130,15 @@ exports.createStripePortal = functions.https.onCall(async (data, context) => {
 });
 
 /**
- * Listens for Stripe webhooks to update Firestore.
- * This is the *most critical* part for keeping your database in sync.
+ * [Webhook Function]
+ * Listens for events from Stripe to update your Firestore database.
+ * This is the *most critical* part.
  */
 exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
   const sig = req.headers["stripe-signature"];
+  // Get your webhook secret from the Stripe dashboard
+  // Set it by running in your terminal:
+  // firebase functions:config:set stripe.webhooksecret="whsec_..."
   const endpointSecret = functions.config().stripe.webhooksecret;
 
   let event;
@@ -208,7 +216,7 @@ exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
       }
     }
   } catch (error) {
-    console.error("Error handling webhook:", error.message);
+    console.error("Error in webhook handler:", error.message);
     return res.status(500).send("Internal server error");
   }
 
@@ -216,9 +224,10 @@ exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
   res.status(200).send();
 });
 
+
 // --- Helper Functions ---
 // These helpers map your Stripe Price IDs to human-readable names and prices
-// This ensures your database stores clean data.
+// This ensures your database stores clean, readable data.
 
 function getPlanName(planId) {
   switch (planId) {
