@@ -7,11 +7,15 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="icon" type="image/jpeg" href="images/logo.jpg">
 
-
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-firestore-compat.js"></script>
+  <!-- IMPORTANT: Add Firebase Functions SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-functions-compat.js"></script>
+
+  <!-- IMPORTANT: Add Stripe.js -->
+  <script src="https://js.stripe.com/v3/"></script>
 </head>
 <body class="bg-blue-50 text-gray-800 font-sans">
 
@@ -20,15 +24,60 @@
     <button id="logoutBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow">Logout</button>
   </header>
 
-  <main class="max-w-3xl mx-auto px-6 py-12">
+  <main class="max-w-5xl mx-auto px-6 py-12">
     <h1 class="text-3xl font-semibold mb-6">📋 Manage My Plan</h1>
 
-    <div id="plan-section" class="bg-white p-6 rounded-lg shadow border-l-4 border-green-500">
-      <h2 class="text-xl font-bold mb-4">Your Current Plan</h2>
-      <p id="plan-status" class="mb-6 text-gray-700">Loading your plan...</p>
+    <!-- This section shows the user's *current* plan -->
+    <div id="plan-section" class="bg-white p-6 rounded-lg shadow mb-12">
+      <h2 class="text-xl font-bold mb-4">Your Subscription</h2>
+      <div id="plan-details">
+        <p class="mb-6 text-gray-700 animate-pulse">Loading your plan...</p>
+      </div>
+    </div>
 
-      <div id="plan-actions" class="space-x-4">
-        <!-- Buttons will be inserted dynamically -->
+    <!-- This section shows the 3 plan options, hidden if user is active -->
+    <div id="pricing-table" class="hidden">
+      <h3 class="text-2xl font-bold text-blue-800 mb-10 text-center">💳 Choose Your Plan</h3>
+      <div class="grid md:grid-cols-3 gap-8">
+        
+        <!-- Basic Plan -->
+        <div class="bg-blue-50 p-6 rounded-xl shadow">
+          <h3 class="font-bold text-xl mb-2">Basic</h3>
+          <p class="text-4xl font-extrabold text-blue-800 mb-4">$5<span class="text-lg">/mo</span></p>
+          <ul class="mb-6 text-gray-700 space-y-2">
+            <li>✔ Covers up to $100 per claim</li>
+            <li>✔ Unlimited rides</li>
+          </ul>
+          <button id="btn-basic" class="w-full bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700">
+            Subscribe
+          </button>
+        </div>
+        
+        <!-- Plus Plan -->
+        <div class="bg-green-50 p-6 rounded-xl shadow border-2 border-green-400">
+          <h3 class="font-bold text-xl mb-2">Plus <span class="text-green-600 text-sm">(Most Popular)</span></h3>
+          <p class="text-4xl font-extrabold text-green-800 mb-4">$8<span class="text-lg">/mo</span></p>
+          <ul class="mb-6 text-gray-700 space-y-2">
+            <li>✔ Covers up to $150 per claim</li>
+            <li>✔ Priority support</li>
+          </ul>
+          <button id="btn-plus" class="w-full bg-green-600 text-white px-5 py-2 rounded hover:bg-green-700">
+            Subscribe
+          </button>
+        </div>
+        
+        <!-- Premium Plan -->
+        <div class="bg-yellow-50 p-6 rounded-xl shadow">
+          <h3 class="font-bold text-xl mb-2">Premium</h3>
+          <p class="text-4xl font-extrabold text-yellow-800 mb-4">$12<span class="text-lg">/mo</span></p>
+          <ul class="mb-6 text-gray-700 space-y-2">
+            <li>✔ Covers up to $200 per claim</li>
+            <li>✔ Instant payouts</li>
+          </ul>
+          <button id="btn-premium" class="w-full bg-yellow-600 text-white px-5 py-2 rounded hover:bg-yellow-700">
+            Subscribe
+          </button>
+        </div>
       </div>
     </div>
   </main>
@@ -38,7 +87,19 @@
   </footer>
 
   <script>
-    // Firebase Config
+    // --- 2. FILL IN THESE PLACEHOLDERS ---
+    
+    // From Stripe Dashboard > Developers > API keys
+    const STRIPE_PUBLISHABLE_KEY = "pk_test_...YOUR_PUBLISHABLE_KEY..."; 
+    
+    // From Stripe Dashboard > Products (Click on the price)
+    const PRICE_ID_BASIC = "price_...YOUR_BASIC_ID...";
+    const PRICE_ID_PLUS = "price_...YOUR_PLUS_ID...";
+    const PRICE_ID_PREMIUM = "price_...YOUR_PREMIUM_ID...";
+    // ------------------------------------
+
+
+    // Firebase Config (This is your existing config)
     const firebaseConfig = {
       apiKey: "AIzaSyCNgkhE0-wt42504oyS4Y61wvZzfgAFYq8",
       authDomain: "cleansurance-3a248.firebaseapp.com",
@@ -52,9 +113,17 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
+    const functions = firebase.functions();
+    const stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
 
-    const planStatus = document.getElementById("plan-status");
-    const planActions = document.getElementById("plan-actions");
+    const planDetails = document.getElementById("plan-details");
+    const pricingTable = document.getElementById("pricing-table");
+
+    // Add click listeners to buttons
+    document.getElementById("btn-basic").addEventListener("click", () => purchasePlan(PRICE_ID_BASIC));
+    document.getElementById("btn-plus").addEventListener("click", () => purchasePlan(PRICE_ID_PLUS));
+    document.getElementById("btn-premium").addEventListener("click", () => purchasePlan(PRICE_ID_PREMIUM));
+
 
     let currentUser;
 
@@ -64,44 +133,124 @@
         return;
       }
       currentUser = user;
-      await loadPlan();
+      
+      // Use onSnapshot for real-time updates
+      // When the webhook updates the DB, this listener will fire
+      // and update the page automatically. This is a pro move.
+      db.collection("users").doc(currentUser.uid)
+        .onSnapshot(doc => {
+          loadPlan(doc);
+        }, err => {
+          console.error("Error listening to user doc: ", err);
+          planDetails.innerHTML = `<p class="text-red-600">Error loading plan.</p>`;
+        });
     });
 
-    async function loadPlan() {
-      const userDoc = await db.collection("users").doc(currentUser.uid).get();
-      const plan = userDoc.exists ? userDoc.data().plan || null : null;
+    // This function runs every time the user's data changes in Firestore
+    function loadPlan(userDoc) {
+      if (!userDoc.exists) {
+        planDetails.innerHTML = `<p class="text-red-600">Error: User not found in database.</p>`;
+        return;
+      }
 
-      if (!plan) {
-        planStatus.textContent = "You currently do not have a plan.";
-        planActions.innerHTML = `
-          <button onclick="purchasePlan()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Purchase Plan ($5/month)</button>
+      const plan = userDoc.data().plan || null;
+
+      // Case 1: User has an active, paying plan
+      if (plan && (plan.status === 'active' || plan.status === 'trialing')) {
+        const endDate = plan.endDate.toDate().toLocaleDateString();
+        planDetails.innerHTML = `
+          <p class="text-lg">Active Plan: <strong class="text-green-700">${plan.name}</strong> ($${plan.price}/month)</p>
+          <p class="text-gray-600 text-sm mb-6">Status: <span class="font-semibold">${plan.status}</span>. Renews on: ${endDate}</p>
+          <button onclick="manageBilling()" class="bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700 shadow">
+            Manage Billing &amp; Cancel Plan
+          </button>
         `;
+        pricingTable.classList.add("hidden"); // Hide pricing table
+        planDetails.classList.remove("animate-pulse");
+
+      // Case 2: User has canceled, but their plan is still active until the end date
+      } else if (plan && plan.status === 'canceled') {
+         const endDate = plan.endDate.toDate().toLocaleDateString();
+         planDetails.innerHTML = `
+          <p class="text-lg">Plan: <strong class="text-gray-700">${plan.name}</strong></p>
+          <p class="text-gray-600 text-sm mb-6 font-semibold">Status: <span class="text-red-600">Canceled</span>. Access ends on: ${endDate}</p>
+          <button onclick="manageBilling()" class="bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700 shadow">
+            Re-subscribe or Manage
+          </button>
+        `;
+        pricingTable.classList.remove("hidden"); // Show pricing to re-subscribe
+        planDetails.classList.remove("animate-pulse");
+
+      // Case 3: User has no plan or it's fully expired
       } else {
-        planStatus.textContent = `Active Plan: ${plan.name} - $${plan.price}/month`;
-        planActions.innerHTML = `
-          <button onclick="cancelPlan()" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Cancel Plan</button>
-        `;
+        planDetails.innerHTML = `<p class="mb-6 text-gray-700">You do not have an active plan. Please choose one below.</p>`;
+        pricingTable.classList.remove("hidden"); // Show pricing table
+        planDetails.classList.remove("animate-pulse");
       }
     }
 
-    async function purchasePlan() {
-      await db.collection("users").doc(currentUser.uid).set({
-        plan: { name: "Cleansurance Basic", price: 5, startDate: new Date() }
-      }, { merge: true });
+    // Calls your 'createStripeCheckout' Cloud Function
+    async function purchasePlan(priceId) {
+      if (!priceId || priceId.includes("...")) {
+        alert("Error: Price ID is not configured. Please contact support.");
+        return;
+      }
 
-      alert("✅ Plan purchased successfully!");
-      loadPlan();
-    }
-
-    async function cancelPlan() {
-      await db.collection("users").doc(currentUser.uid).update({
-        plan: firebase.firestore.FieldValue.delete()
+      // Disable buttons to prevent double-click
+      const allButtons = pricingTable.querySelectorAll('button');
+      allButtons.forEach(btn => {
+        btn.disabled = true;
+        btn.innerHTML = "Redirecting...";
       });
 
-      alert("❌ Plan canceled successfully.");
-      loadPlan();
+      try {
+        const createStripeCheckout = functions.httpsCallable('createStripeCheckout');
+        const result = await createStripeCheckout({ priceId: priceId });
+
+        const { sessionId } = result.data;
+        
+        // Redirect to Stripe's hosted Checkout page
+        const { error } = await stripe.redirectToCheckout({
+          sessionId: sessionId,
+        });
+
+        if (error) {
+          throw new Error(error.message);
+        }
+      } catch (error) {
+        alert("Error: " + error.message);
+        // Re-enable buttons if error
+        allButtons.forEach(btn => {
+          btn.disabled = false;
+          btn.innerHTML = "Subscribe";
+        });
+      }
     }
 
+    // Calls your 'createStripePortal' Cloud Function
+    async function manageBilling() {
+      const manageButton = planDetails.querySelector('button');
+      if (manageButton) {
+        manageButton.disabled = true;
+        manageButton.innerHTML = "Redirecting to portal...";
+      }
+
+      try {
+        const createStripePortal = functions.httpsCallable('createStripePortal');
+        const result = await createStripePortal();
+        
+        // Redirect user to the Stripe Customer Portal
+        window.location.href = result.data.url;
+      } catch (error) {
+        alert("Error: " + error.message);
+        if (manageButton) {
+          manageButton.disabled = false;
+          manageButton.innerHTML = "Manage Billing &amp; Cancel Plan";
+        }
+      }
+    }
+
+    // Logout button
     document.getElementById("logoutBtn").addEventListener("click", async () => {
       await auth.signOut();
       window.location.href = "index.html";
@@ -109,3 +258,4 @@
   </script>
 </body>
 </html>
+
