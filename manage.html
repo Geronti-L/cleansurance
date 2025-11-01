@@ -7,12 +7,10 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="icon" type="image/jpeg" href="images/logo.jpg">
 
-  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-firestore-compat.js"></script>
   
-  <!-- Stripe.js (No Firebase Functions SDK needed!) -->
   <script src="https://js.stripe.com/v3/"></script>
 </head>
 <body class="bg-blue-50 text-gray-800 font-sans">
@@ -78,15 +76,15 @@
 
   <script>
     // --- IMPORTANT ---
-    // YOU MUST FILL THESE IN
+    // FIX: YOU MUST FILL THESE IN
     
     // From Stripe Dashboard > Developers > API keys
-    const STRIPE_PUBLISHABLE_KEY = "pk_live_...YOUR_PUBLISHABLE_KEY..."; 
+    const STRIPE_PUBLISHABLE_KEY = "pk_live_...YOUR_LIVE_PUBLISHABLE_KEY..."; // /* FIX: Add your Stripe Publishable Key */
     
     // From Stripe Dashboard > Products (Click on the price)
-    const PRICE_ID_BASIC = "price_...YOUR_BASIC_ID...";
-    const PRICE_ID_PLUS = "price_...YOUR_PLUS_ID...";
-    const PRICE_ID_PREMIUM = "price_...YOUR_PREMIUM_ID...";
+    const PRICE_ID_BASIC = "price_...YOUR_BASIC_ID..."; // /* FIX: Add your Basic Price ID */
+    const PRICE_ID_PLUS = "price_...YOUR_PLUS_ID..."; // /* FIX: Add your Plus Price ID */
+    const PRICE_ID_PREMIUM = "price_...YOUR_PREMIUM_ID..."; // /* FIX: Add your Premium Price ID */
     // --------------------
 
     // Firebase Config (This is your existing config)
@@ -249,10 +247,9 @@
 
     document.getElementById("logoutBtn").addEventListener("click", async () => {
       await auth.signOut();
-      window.location.href = "index.html";
+      // FIX: Redirect to login.html, not index.html
+      window.location.href = "login.html";
     });
   </script>
 </body>
 </html>
-
-
