@@ -20,10 +20,11 @@ try {
 }
 
 // --- Helper Functions to get plan details from Price IDs ---
-// You MUST fill these in with your real Price IDs from Stripe
-const PRICE_ID_BASIC = "price_...prod_TLB65SIshD02dK...";
-const PRICE_ID_PLUS = "price_...prod_TLB6MKNU99DHZQ...";
-const PRICE_ID_PREMIUM = "price_...prod_TLB6gIz6nSXhFm...";
+// FIX: YOU MUST fill these in with your real Price IDs from Stripe
+// These MUST match the IDs used in your `manage.html` file.
+const PRICE_ID_BASIC = "price_...prod_TLB65SIshD02dK..."; // /* FIX: Add your Basic Price ID */
+const PRICE_ID_PLUS = "price_...prod_TLB6MKNU99DHZQ..."; // /* FIX: Add your Plus Price ID */
+const PRICE_ID_PREMIUM = "price_...prod_TLB6gIz6nSXhFm..."; // /* FIX: Add your Premium Price ID */
 
 function getPlanName(planId) {
   switch (planId) {
@@ -63,6 +64,10 @@ exports.handler = async (event) => {
     if (stripeEvent.type === "checkout.session.completed") {
       const session = data;
       const uid = session.metadata.firebaseUID;
+      // Check if UID exists, otherwise webhook can't link user
+      if (!uid) {
+        throw new Error("Missing firebaseUID in session metadata");
+      }
       const subscription = await stripe.subscriptions.retrieve(
         session.subscription
       );
